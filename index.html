@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedido + Pagamento PIX</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        button {
+            background-color: #32a852;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #2d9248;
+        }
+        .pix-options {
+            margin: 15px 0;
+        }
+        .pix-option {
+            display: inline-block;
+            margin-right: 10px;
+        }
+        #payment-screen {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        #success-message {
+            display: none;
+            color: green;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .qr-code {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .qr-code img {
+            max-width: 200px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Faça seu Pedido</h1>
+    <form id="orderForm">
+        <div class="form-group">
+            <label for="name">Nome Completo:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">E-mail:</label>
+            <input type="text" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="message">Mensagem/Pedido:</label>
+            <textarea id="message" name="message" required></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="pixKey">Chave PIX (para reembolso ou pagamento):</label>
+            <input type="text" id="pixKey" name="pixKey" placeholder="CPF, e-mail, telefone ou chave aleatória" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="amount">Valor do Pedido (R$):</label>
+            <input type="text" id="amount" name="amount" placeholder="Ex: 50.00" required>
+        </div>
+        
+        <button type="button" id="proceedToPayment">AVANÇAR PARA PAGAMENTO</button>
+    </form>
+
+    <!-- Tela de Pagamento PIX (inicialmente oculta) -->
+    <div id="payment-screen">
+        <h2>✅ Finalize seu Pagamento</h2>
+        <p>Escaneie o QR Code ou copie o código PIX abaixo:</p>
+        
+        <div class="qr-code">
+            <!-- QR Code de exemplo (substitua por um gerador real) -->
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PIX1234567890" alt="QR Code PIX">
+        </div>
+        
+        <div class="form-group">
+            <label for="pixCode">Código PIX (Copie e Cole no seu App):</label>
+            <input type="text" id="pixCode" value="00020126360014BR.GOV.BCB.PIX0114+5531999999999520400005303986540550.005802BR5925SEU NOME6007CIDADE62070503***6304A1B2" readonly>
+            <button onclick="copyPixCode()">Copiar Código</button>
+        </div>
+        
+        <p><strong>Valor:</strong> R$ <span id="displayAmount">0.00</span></p>
+        
+        <button type="button" id="confirmPayment">JÁ PAGUEI, ENVIAR PEDIDO</button>
+    </div>
+
+    <!-- Mensagem de sucesso (oculta inicialmente) -->
+    <div id="success-message">
+        <h2>✔ Pedido Enviado com Sucesso!</h2>
+        <p>Obrigado pelo seu pagamento. Seu pedido foi encaminhado para nosso e-mail.</p>
+    </div>
+
+    <script>
+        // Variável para armazenar os dados do formulário
+        let formData = {};
+
+        // 1. Captura os dados do formulário e mostra a tela de pagamento
+        document.getElementById("proceedToPayment").addEventListener("click", function() {
+            // Validação básica
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+            const message = document.getElementById("message").value;
+            const pixKey = document.getElementById("pixKey").value;
+            const amount = document.getElementById("amount").value;
+
+            if (!name || !email || !message || !pixKey || !amount) {
+                alert("Por favor, preencha todos os campos!");
+                return;
+            }
+
+            // Armazena os dados para envio posterior
+            formData = { name, email, message, pixKey, amount };
+
+            // Mostra o valor na tela de pagamento
+            document.getElementById("displayAmount").textContent = amount;
+
+            // Oculta o formulário e mostra a tela de pagamento
+            document.getElementById("orderForm").style.display = "none";
+            document.getElementById("payment-screen").style.display = "block";
+        });
+
+        // 2. Simula o envio do pedido após o pagamento
+        document.getElementById("confirmPayment").addEventListener("click", function() {
+            // Simulação de envio por e-mail (substitua pelo seu método real)
+            const emailLink = `mailto:henrique.camaugusto@gmail.com?subject=Novo Pedido PIX&body=Nome: ${formData.name}%0D%0AE-mail: ${formData.email}%0D%0AMensagem: ${formData.message}%0D%0AChave PIX: ${formData.pixKey}%0D%0AValor: R$ ${formData.amount}`;
+            
+            // Abre o cliente de e-mail padrão
+            window.location.href = emailLink;
+            
+            // Mostra mensagem de sucesso
+            document.getElementById("payment-screen").style.display = "none";
+            document.getElementById("success-message").style.display = "block";
+        });
+
+        // Função para copiar o código PIX
+        function copyPixCode() {
+            const pixCode = document.getElementById("pixCode");
+            pixCode.select();
+            document.execCommand("copy");
+            alert("Código PIX copiado! Cole no seu aplicativo de pagamento.");
+        }
+    </script>
+</body>
+</html>
