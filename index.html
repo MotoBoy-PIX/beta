@@ -3,138 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pedido + Pagamento PIX</title>
+    <title>Solicitação de QR Code para Clarinete</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f9f9f9;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: bold;
+            color: #2c3e50;
         }
-        input[type="text"], textarea, select {
+        input[type="text"], input[type="email"], textarea, select {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 6px;
             box-sizing: border-box;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        input[type="text"]:focus, input[type="email"]:focus, textarea:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
         }
         textarea {
             height: 120px;
             resize: vertical;
         }
         button {
-            background-color: #32a852;
+            background-color: #3498db;
             color: white;
-            padding: 12px 20px;
+            padding: 14px 20px;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 16px;
             width: 100%;
             margin-top: 10px;
+            transition: background-color 0.3s;
+            font-weight: bold;
         }
         button:hover {
-            background-color: #2d9248;
-        }
-        .pix-options {
-            margin: 15px 0;
-        }
-        .pix-option {
-            display: inline-block;
-            margin-right: 10px;
+            background-color: #2980b9;
         }
         #payment-screen {
             display: none;
             background: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-top: 20px;
         }
         #success-message {
             display: none;
-            color: green;
+            color: #27ae60;
             text-align: center;
             margin-top: 20px;
+            padding: 20px;
+            background-color: #e8f5e9;
+            border-radius: 6px;
         }
         .qr-code {
             text-align: center;
-            margin: 20px 0;
+            margin: 25px 0;
         }
         .qr-code img {
-            max-width: 200px;
+            max-width: 220px;
             border: 1px solid #ddd;
-            padding: 10px;
+            padding: 15px;
             background: white;
+        }
+        .pix-code {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            word-break: break-all;
+            margin-bottom: 20px;
+        }
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #25D366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            text-align: center;
+            font-size: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .whatsapp-float:hover {
+            background-color: #128C7E;
+            transform: scale(1.1);
+        }
+        .value-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .pix-key-type {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .pix-key-option {
+            display: flex;
+            align-items: center;
+        }
+        .pix-key-option input {
+            margin-right: 8px;
         }
     </style>
 </head>
 <body>
-    <h1>Faça seu Pedido</h1>
-    <form id="orderForm">
-        <div class="form-group">
-            <label for="name">Nome Completo:</label>
-            <input type="text" id="name" name="name" required>
-        </div>
-        
-        <div class="form-group">
-            <label for="email">E-mail:</label>
-            <input type="text" id="email" name="email" required>
-        </div>
-        
-        <div class="form-group">
-            <label for="message">Mensagem/Pedido:</label>
-            <textarea id="message" name="message" required></textarea>
-        </div>
-        
-        <div class="form-group">
-            <label for="pixKey">Chave PIX (para reembolso ou pagamento):</label>
-            <input type="text" id="pixKey" name="pixKey" placeholder="CPF, e-mail, telefone ou chave aleatória" required>
-        </div>
-        
-        <div class="form-group">
-            <label for="amount">Valor do Pedido (R$):</label>
-            <input type="text" id="amount" name="amount" placeholder="Ex: 50.00" required>
-        </div>
-        
-        <button type="button" id="proceedToPayment">AVANÇAR PARA PAGAMENTO</button>
-    </form>
+    <div class="container">
+        <h1>Solicitar QR Code para Clarinete</h1>
+        <form id="orderForm">
+            <div class="form-group">
+                <label for="name">Nome Completo:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="message">Mensagem/Pedido:</label>
+                <textarea id="message" name="message" placeholder="Descreva seu pedido de QR Code para clarinete" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="pixKey">Sua Chave PIX:</label>
+                <input type="text" id="pixKey" name="pixKey" placeholder="Informe sua chave PIX" required>
+                
+                <div class="pix-key-type">
+                    <div class="pix-key-option">
+                        <input type="radio" id="cpf" name="pixType" value="CPF" checked>
+                        <label for="cpf" style="font-weight: normal;">CPF</label>
+                    </div>
+                    <div class="pix-key-option">
+                        <input type="radio" id="emailPix" name="pixType" value="E-mail">
+                        <label for="emailPix" style="font-weight: normal;">E-mail</label>
+                    </div>
+                    <div class="pix-key-option">
+                        <input type="radio" id="phone" name="pixType" value="Telefone">
+                        <label for="phone" style="font-weight: normal;">Telefone</label>
+                    </div>
+                    <div class="pix-key-option">
+                        <input type="radio" id="random" name="pixType" value="Aleatória">
+                        <label for="random" style="font-weight: normal;">Aleatória</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="value-display">
+                Valor: R$ 5,50
+            </div>
+            
+            <button type="button" id="proceedToPayment">
+                <i class="fas fa-arrow-right"></i> AVANÇAR PARA PAGAMENTO
+            </button>
+        </form>
 
-    <!-- Tela de Pagamento PIX (inicialmente oculta) -->
-    <div id="payment-screen">
-        <h2>✅ Finalize seu Pagamento</h2>
-        <p>Escaneie o QR Code ou copie o código PIX abaixo:</p>
-        
-        <div class="qr-code">
-            <!-- QR Code de exemplo (substitua por um gerador real) -->
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PIX1234567890" alt="QR Code PIX">
+        <!-- Tela de Pagamento PIX -->
+        <div id="payment-screen">
+            <h2 style="text-align: center; color: #2c3e50;">Pagamento via PIX</h2>
+            <p style="text-align: center;">Escaneie o QR Code ou copie o código abaixo:</p>
+            
+            <div class="qr-code">
+                <!-- QR Code gerado dinamicamente com sua chave PIX -->
+                <img id="qrCodeImage" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=pix%3A0c397cfc-9a35-4be7-a550-3fcb5c9d1afb%3Famount%3D5.50" alt="QR Code PIX">
+            </div>
+            
+            <div class="form-group">
+                <label>Código PIX (Copie e Cole no seu App):</label>
+                <div class="pix-code" id="pixCode">
+                    00020126580014BR.GOV.BCB.PIX01360c397cfc-9a35-4be7-a550-3fcb5c9d1afb52040000530398654045.505802BR5925HENRIQUE CAM AUGUSTO6009SAO PAULO62070503***6304A1B2
+                </div>
+                <button onclick="copyPixCode()">
+                    <i class="fas fa-copy"></i> COPIAR CÓDIGO PIX
+                </button>
+            </div>
+            
+            <div class="value-display">
+                Valor: R$ 5,50
+            </div>
+            
+            <button type="button" id="confirmPayment">
+                <i class="fas fa-check-circle"></i> JÁ PAGUEI, FINALIZAR PEDIDO
+            </button>
         </div>
-        
-        <div class="form-group">
-            <label for="pixCode">Código PIX (Copie e Cole no seu App):</label>
-            <input type="text" id="pixCode" value="0c397cfc-9a35-4be7-a550-3fcb5c9d1afb" readonly>
-            <button onclick="copyPixCode()">Copiar Código</button>
+
+        <!-- Mensagem de sucesso -->
+        <div id="success-message">
+            <h2><i class="fas fa-check-circle"></i> Pedido Enviado com Sucesso!</h2>
+            <p>Obrigado pelo seu pagamento. Seu pedido foi encaminhado e em breve você receberá seu QR Code para clarinete.</p>
+            <p>Qualquer dúvida, entre em contato via WhatsApp.</p>
         </div>
-        
-        <p><strong>Valor:</strong> R$ <span id="displayAmount">5.00</span></p>
-        
-        <button type="button" id="confirmPayment">JÁ PAGUEI, ENVIAR PEDIDO</button>
     </div>
 
-    <!-- Mensagem de sucesso (oculta inicialmente) -->
-    <div id="success-message">
-        <h2>✔ Pedido Enviado com Sucesso!</h2>
-        <p>Obrigado pelo seu pagamento. Seu pedido foi encaminhado para nosso e-mail.</p>
-    </div>
+    <!-- Botão do WhatsApp -->
+    <a href="https://wa.me/5519920000177" class="whatsapp-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
 
     <script>
         // Variável para armazenar os dados do formulário
@@ -147,18 +250,22 @@
             const email = document.getElementById("email").value;
             const message = document.getElementById("message").value;
             const pixKey = document.getElementById("pixKey").value;
-            const amount = document.getElementById("amount").value;
+            const pixType = document.querySelector('input[name="pixType"]:checked').value;
 
-            if (!name || !email || !message || !pixKey || !amount) {
+            if (!name || !email || !message || !pixKey) {
                 alert("Por favor, preencha todos os campos!");
                 return;
             }
 
             // Armazena os dados para envio posterior
-            formData = { name, email, message, pixKey, amount };
-
-            // Mostra o valor na tela de pagamento
-            document.getElementById("displayAmount").textContent = amount;
+            formData = { 
+                name, 
+                email, 
+                message, 
+                pixKey, 
+                pixType,
+                amount: "5.50" 
+            };
 
             // Oculta o formulário e mostra a tela de pagamento
             document.getElementById("orderForm").style.display = "none";
@@ -167,11 +274,16 @@
 
         // 2. Simula o envio do pedido após o pagamento
         document.getElementById("confirmPayment").addEventListener("click", function() {
-            // Simulação de envio por e-mail (substitua pelo seu método real)
-            const emailLink = `mailto:henrique.camaugusto@gmail.com?subject=Novo Pedido PIX&body=Nome: ${formData.name}%0D%0AE-mail: ${formData.email}%0D%0AMensagem: ${formData.message}%0D%0AChave PIX: ${formData.pixKey}%0D%0AValor: R$ ${formData.amount}`;
+            // Monta o corpo do e-mail
+            const subject = "Novo Pedido de QR Code para Clarinete";
+            const body = `Nome: ${formData.name}%0D%0A` +
+                         `E-mail: ${formData.email}%0D%0A` +
+                         `Mensagem: ${formData.message}%0D%0A` +
+                         `Chave PIX (${formData.pixType}): ${formData.pixKey}%0D%0A` +
+                         `Valor: R$ ${formData.amount}`;
             
             // Abre o cliente de e-mail padrão
-            window.location.href = emailLink;
+            window.location.href = `mailto:Henrique.camaugusto@icloud.com?subject=${subject}&body=${body}`;
             
             // Mostra mensagem de sucesso
             document.getElementById("payment-screen").style.display = "none";
@@ -181,9 +293,19 @@
         // Função para copiar o código PIX
         function copyPixCode() {
             const pixCode = document.getElementById("pixCode");
-            pixCode.select();
+            const range = document.createRange();
+            range.selectNode(pixCode);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
             document.execCommand("copy");
-            alert("Código PIX copiado! Cole no seu aplicativo de pagamento.");
+            window.getSelection().removeAllRanges();
+            
+            // Feedback visual
+            const originalText = document.getElementById("confirmPayment").innerHTML;
+            document.getElementById("confirmPayment").innerHTML = '<i class="fas fa-check"></i> CÓDIGO COPIADO!';
+            setTimeout(() => {
+                document.getElementById("confirmPayment").innerHTML = originalText;
+            }, 2000);
         }
     </script>
 </body>
